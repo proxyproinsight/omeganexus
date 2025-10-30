@@ -1,0 +1,24 @@
+[Unit]
+Description=Omega9-NEXUS v15.0 Proxy Hunter
+After=network.target
+
+[Service]
+Type=simple
+User=dappy
+WorkingDirectory=/home/dappy/omega9-nexus
+Environment="DATABASE_URL=sqlite:///home/dappy/omega9-nexus/omega9.db"
+Environment="BIND_ADDRESS=0.0.0.0:8081"
+Environment="HUNT_INTERVAL_SECS=120"
+EnvironmentFile=/home/dappy/omega9-nexus/.env
+ExecStart=/home/dappy/omega9-nexus/target/release/omega9-nexus
+Restart=always
+RestartSec=10
+
+# Security hardening
+ProtectSystem=strict
+ReadWritePaths=/home/dappy/omega9-nexus
+PrivateTmp=yes
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target

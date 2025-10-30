@@ -1,0 +1,8 @@
+# Omega9-NEXUS v15.0
+omega9.db
+omega9.db-shm
+omega9.db-wal
+data/
+target/
+*.log
+.env

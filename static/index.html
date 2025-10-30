@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omega9-NEXUS v15.0 - Proxy Hunter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse-glow {
+            0%, 100% { 
+                opacity: 1;
+                box-shadow: 0 0 5px #06b6d4, 0 0 10px #06b6d4, 0 0 20px #06b6d4;
+            }
+            50% { 
+                opacity: 0.5;
+                box-shadow: 0 0 10px #06b6d4, 0 0 20px #06b6d4, 0 0 40px #06b6d4;
+            }
+        }
+        .pulse-indicator {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        @keyframes lightning {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+        .lightning-pulse {
+            animation: lightning 1.5s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100">
+    <div class="container mx-auto p-6">
+        <header class="mb-8 relative">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold text-cyan-400">🔥 Omega9-NEXUS v15.0</h1>
+                    <p class="text-gray-400">Elite Proxy Hunting System with AI Scoring</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <!-- System Online Indicator -->
+                    <div class="flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-lg border border-cyan-500">
+                        <div class="pulse-indicator w-3 h-3 bg-cyan-400 rounded-full"></div>
+                        <span class="text-cyan-400 font-semibold">SYSTEM ONLINE</span>
+                    </div>
+                    <!-- Lightning Hunt Indicator -->
+                    <div class="lightning-pulse text-yellow-400 text-4xl" title="Active Hunt">⚡</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Dashboard -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+            <div class="bg-gray-800 p-4 rounded-lg border border-cyan-500">
+                <h3 class="text-sm text-gray-400">Total Proxies</h3>
+                <p id="stat-total" class="text-2xl font-bold text-cyan-400">0</p>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg border border-green-500">
+                <h3 class="text-sm text-gray-400">Working</h3>
+                <p id="stat-working" class="text-2xl font-bold text-green-400">0</p>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg border border-yellow-500">
+                <h3 class="text-sm text-gray-400">Avg Latency</h3>
+                <p id="stat-latency" class="text-2xl font-bold text-yellow-400">0ms</p>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg border border-purple-500">
+                <h3 class="text-sm text-gray-400">Avg Quality</h3>
+                <p id="stat-quality" class="text-2xl font-bold text-purple-400">0.00</p>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg border border-blue-500">
+                <h3 class="text-sm text-gray-400">Active Sources</h3>
+                <p id="stat-sources" class="text-2xl font-bold text-blue-400">0</p>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="mb-6 flex gap-4">
+            <button onclick="refreshProxies()" class="bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded">
+                🔄 Refresh Proxies
+            </button>
+            <button onclick="triggerHunt()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">
+                🔍 Trigger Hunt
+            </button>
+            <button onclick="showSources()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+                📡 View Sources
+            </button>
+        </div>
+
+        <!-- Proxy List -->
+        <div class="bg-gray-800 p-6 rounded-lg">
+            <h2 class="text-2xl font-bold mb-4 text-cyan-400">Top Proxies</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b border-gray-700">
+                            <th class="p-2">Protocol</th>
+                            <th class="p-2">Address</th>
+                            <th class="p-2">Location</th>
+                            <th class="p-2">Latency</th>
+                            <th class="p-2">Quality</th>
+                            <th class="p-2">Fraud</th>
+                            <th class="p-2">Flags</th>
+                            <th class="p-2">Source</th>
+                        </tr>
+                    </thead>
+                    <tbody id="proxy-table">
+                        <tr><td colspan="8" class="text-center p-4 text-gray-500">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sources Modal -->
+        <div id="sources-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div class="bg-gray-800 p-6 rounded-lg max-w-4xl w-full max-h-96 overflow-y-auto">
+                <h2 class="text-2xl font-bold mb-4 text-cyan-400">Active Sources</h2>
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b border-gray-700">
+                            <th class="p-2">ID</th>
+                            <th class="p-2">Name</th>
+                            <th class="p-2">Quality</th>
+                            <th class="p-2">Proxies</th>
+                            <th class="p-2">Success Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sources-table"></tbody>
+                </table>
+                <button onclick="closeSources()" class="mt-4 bg-red-600 hover:bg-red-700 px-4 py-2 rounded">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws;
+
+        function connectWebSocket() {
+            ws = new WebSocket(`ws://${window.location.host}/ws`);
+            
+            ws.onmessage = (event) => {
+                const stats = JSON.parse(event.data);
+                document.getElementById('stat-total').textContent = stats.total_proxies;
+                document.getElementById('stat-working').textContent = stats.working_proxies;
+                document.getElementById('stat-latency').textContent = Math.round(stats.avg_latency) + 'ms';
+                document.getElementById('stat-quality').textContent = stats.avg_quality.toFixed(2);
+                document.getElementById('stat-sources').textContent = stats.sources_active;
+            };
+
+            ws.onclose = () => {
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+
+        async function refreshProxies() {
+            const response = await fetch('/api/proxies');
+            const proxies = await response.json();
+            
+            const table = document.getElementById('proxy-table');
+            table.innerHTML = '';
+
+            proxies.forEach(p => {
+                const flags = [];
+                if (p.elite) flags.push('👑 Elite');
+                if (p.dns_leak) flags.push('⚠️ Leak');
+                
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-700 hover:bg-gray-750';
+                row.innerHTML = `
+                    <td class="p-2"><span class="bg-cyan-800 px-2 py-1 rounded text-xs">${p.protocol}</span></td>
+                    <td class="p-2 font-mono text-cyan-400">${p.host}:${p.port}</td>
+                    <td class="p-2">${p.country || '??'}, ${p.city || '??'}</td>
+                    <td class="p-2"><span class="text-yellow-400">${p.latency_ms || 0}ms</span></td>
+                    <td class="p-2"><span class="text-purple-400">${p.quality_score.toFixed(2)}</span></td>
+                    <td class="p-2"><span class="${p.fraud_score > 0.5 ? 'text-red-400' : 'text-green-400'}">${p.fraud_score.toFixed(2)}</span></td>
+                    <td class="p-2 text-xs">${flags.join(' ')}</td>
+                    <td class="p-2 text-xs text-gray-400">${p.source}</td>
+                `;
+                table.appendChild(row);
+            });
+        }
+
+        async function triggerHunt() {
+            await fetch('/api/hunt', { method: 'POST' });
+            alert('Hunt triggered! Check back in a few minutes.');
+        }
+
+        async function showSources() {
+            const response = await fetch('/api/sources');
+            const sources = await response.json();
+            
+            const table = document.getElementById('sources-table');
+            table.innerHTML = '';
+
+            sources.forEach(s => {
+                const successRate = s.total_proxies > 0 
+                    ? ((s.working_proxies / s.total_proxies) * 100).toFixed(1)
+                    : '0.0';
+
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-700';
+                row.innerHTML = `
+                    <td class="p-2">${s.id}</td>
+                    <td class="p-2">${s.name}</td>
+                    <td class="p-2"><span class="text-purple-400">${s.quality_score.toFixed(2)}</span></td>
+                    <td class="p-2">${s.working_proxies} / ${s.total_proxies}</td>
+                    <td class="p-2"><span class="text-green-400">${successRate}%</span></td>
+                `;
+                table.appendChild(row);
+            });
+
+            document.getElementById('sources-modal').classList.remove('hidden');
+        }
+
+        function closeSources() {
+            document.getElementById('sources-modal').classList.add('hidden');
+        }
+
+        // Initial load
+        connectWebSocket();
+        refreshProxies();
+        setInterval(refreshProxies, 30000); // Refresh every 30s
+    </script>
+</body>
+</html>
