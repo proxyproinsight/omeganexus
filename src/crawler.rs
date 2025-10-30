@@ -8,6 +8,9 @@ use tracing::{debug, error, warn};
 pub struct GeoInfo {
     pub country: String,
     pub city: String,
+    pub isp: Option<String>,
+    pub asn: Option<String>,
+    pub proxy_type: String, // "datacenter", "residential", "mobile"
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -72,8 +75,8 @@ pub async fn fetch_geo(client: &Client, proxy: &str) -> Result<GeoInfo, Box<dyn 
     let parts: Vec<&str> = proxy.split(':').collect();
     let ip = parts[0];
     
-    // Using ip-api.com (free tier)
-    let url = format!("http://ip-api.com/json/{}", ip);
+    // Using ip-api.com (free tier) with fields parameter for ISP/ASN data
+    let url = format!("http://ip-api.com/json/{}?fields=status,country,city,isp,as,mobile", ip);
     
     #[derive(Deserialize)]
     struct IpApiResponse {
@@ -81,6 +84,12 @@ pub async fn fetch_geo(client: &Client, proxy: &str) -> Result<GeoInfo, Box<dyn 
         country: String,
         #[serde(default)]
         city: String,
+        #[serde(default)]
+        isp: String,
+        #[serde(default, rename = "as")]
+        asn: String,
+        #[serde(default)]
+        mobile: bool,
         status: String,
     }
     
@@ -93,13 +102,74 @@ pub async fn fetch_geo(client: &Client, proxy: &str) -> Result<GeoInfo, Box<dyn 
     let data: IpApiResponse = response.json().await?;
     
     if data.status == "success" {
+        // Detect proxy type based on ISP name and mobile flag
+        let proxy_type = detect_proxy_type(&data.isp, data.mobile);
+        
         Ok(GeoInfo {
             country: data.country,
             city: data.city,
+            isp: if !data.isp.is_empty() { Some(data.isp) } else { None },
+            asn: if !data.asn.is_empty() { Some(data.asn) } else { None },
+            proxy_type,
         })
     } else {
         Err("Geolocation lookup failed".into())
     }
+}
+
+/// Detect if proxy is residential, mobile, or datacenter based on ISP name
+fn detect_proxy_type(isp: &str, is_mobile: bool) -> String {
+    let isp_lower = isp.to_lowercase();
+    
+    // Mobile carriers (high value!)
+    let mobile_keywords = [
+        "mobile", "wireless", "cellular", "t-mobile", "verizon", "at&t", "att",
+        "sprint", "vodafone", "orange", "o2", "telefonica", "telekom", "rogers",
+        "bell canada", "telus", "claro", "tim", "movistar", "airtel", "reliance",
+        "jio", "idea", "mtn", "safaricom", "china mobile", "china unicom"
+    ];
+    
+    // Residential ISPs (golden!)
+    let residential_keywords = [
+        "comcast", "xfinity", "charter", "spectrum", "cox", "optimum", "altice",
+        "centurylink", "frontier", "windstream", "bt internet", "sky broadband",
+        "virgin media", "talktalk", "plusnet", "ee", "vodafone broadband",
+        "telstra", "optus", "tpg", "dodo", "telus", "shaw", "cogeco", "videotron",
+        "oi", "vivo", "net", "telmex", "izzi", "megacable", "totalplay",
+        "rostelecom", "beeline", "mts", "megafon", "ttnet", "turk telekom"
+    ];
+    
+    // Datacenter/hosting (lower value)
+    let datacenter_keywords = [
+        "amazon", "aws", "google", "gcp", "microsoft", "azure", "digital ocean",
+        "digitalocean", "linode", "vultr", "ovh", "hetzner", "choopa", "quadranet",
+        "constant", "leaseweb", "online.net", "scaleway", "packet", "cloudflare"
+    ];
+    
+    if is_mobile {
+        return "mobile".to_string();
+    }
+    
+    for keyword in mobile_keywords.iter() {
+        if isp_lower.contains(keyword) {
+            return "mobile".to_string();
+        }
+    }
+    
+    for keyword in residential_keywords.iter() {
+        if isp_lower.contains(keyword) {
+            return "residential".to_string();
+        }
+    }
+    
+    for keyword in datacenter_keywords.iter() {
+        if isp_lower.contains(keyword) {
+            return "datacenter".to_string();
+        }
+    }
+    
+    // Default to datacenter if unknown
+    "datacenter".to_string()
 }
 
 /// Check fraud score via scamalytics.com
@@ -218,6 +288,57 @@ pub async fn test_stability(client: &Client, proxy_url: &str, pings: usize) -> R
     }
     
     Ok(successful_pings as f64 / pings as f64)
+}
+
+/// Fast validation - only connectivity + geo (skip fraud/dns/stability for speed)
+pub async fn validate_proxy_fast(
+    client: &Client,
+    proxy: &str,
+    protocol: &str,
+) -> Result<ValidationResult, Box<dyn std::error::Error + Send + Sync>> {
+    let proxy_url = format!("{}://{}", protocol, proxy);
+    
+    // Basic connectivity test with reduced timeout
+    let start = std::time::Instant::now();
+    let proxy_obj = reqwest::Proxy::all(&proxy_url)?;
+    let test_client = Client::builder()
+        .proxy(proxy_obj)
+        .timeout(Duration::from_secs(5)) // Reduced from 10s
+        .pool_max_idle_per_host(0) // Disable keep-alive for faster cleanup
+        .build()?;
+    
+    match test_client.get("https://httpbin.org/ip").send().await {
+        Ok(_) => {
+            let latency_ms = start.elapsed().as_millis() as i64;
+            
+            // Only fetch geo info - skip fraud/dns/stability for speed
+            let geo = fetch_geo(client, proxy).await.ok();
+            
+            Ok(ValidationResult {
+                working: true,
+                latency_ms,
+                geo,
+                fraud: None, // Skip fraud check
+                dns_leak: false, // Skip DNS leak check
+                elite: false, // Skip elite check
+                anonymity_level: "unknown".to_string(),
+                stability_score: 0.7, // Default stability score
+            })
+        }
+        Err(e) => {
+            debug!("Proxy {} failed: {}", proxy, e);
+            Ok(ValidationResult {
+                working: false,
+                latency_ms: 0,
+                geo: None,
+                fraud: None,
+                dns_leak: false,
+                elite: false,
+                anonymity_level: "unknown".to_string(),
+                stability_score: 0.0,
+            })
+        }
+    }
 }
 
 /// Validate a single proxy with comprehensive checks

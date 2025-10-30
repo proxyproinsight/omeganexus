@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Omega9-NEXUS v15.0 - Proxy Hunter</title>
+    <title>Omega9 - Proxy Hunter</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse-glow {
@@ -26,24 +26,135 @@
         .lightning-pulse {
             animation: lightning 1.5s ease-in-out infinite;
         }
+        
+        /* Realistic flame animation */
+        @keyframes flicker {
+            0%, 100% { 
+                transform: translateY(0) scale(1);
+                filter: hue-rotate(0deg) brightness(1);
+            }
+            25% { 
+                transform: translateY(-2px) scale(1.05);
+                filter: hue-rotate(10deg) brightness(1.2);
+            }
+            50% { 
+                transform: translateY(-4px) scale(0.98);
+                filter: hue-rotate(-10deg) brightness(0.9);
+            }
+            75% { 
+                transform: translateY(-1px) scale(1.02);
+                filter: hue-rotate(5deg) brightness(1.1);
+            }
+        }
+        
+        .flame {
+            display: inline-block;
+            animation: flicker 2s ease-in-out infinite;
+            text-shadow: 
+                0 0 10px #ff6b00,
+                0 0 20px #ff6b00,
+                0 0 30px #ff3300,
+                0 0 40px #ff3300;
+        }
+        
+        /* Left to right glow animation */
+        @keyframes glow-sweep {
+            0% {
+                background-position: -200% center;
+            }
+            100% {
+                background-position: 200% center;
+            }
+        }
+        
+        .omega-glow {
+            background: linear-gradient(
+                90deg,
+                #06b6d4 0%,
+                #22d3ee 25%,
+                #ffffff 50%,
+                #22d3ee 75%,
+                #06b6d4 100%
+            );
+            background-size: 200% auto;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow-sweep 3s linear infinite;
+            text-shadow: 
+                0 0 20px rgba(6, 182, 212, 0.5),
+                0 0 40px rgba(6, 182, 212, 0.3);
+            font-weight: bold;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-100">
     <div class="container mx-auto p-6">
         <header class="mb-8 relative">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h1 class="text-4xl font-bold text-cyan-400">🔥 Omega9-NEXUS v15.0</h1>
+                    <h1 class="text-5xl font-bold">
+                        <span class="flame text-6xl">🔥</span>
+                        <span class="omega-glow">Omega9</span>
+                    </h1>
                     <p class="text-gray-400">Elite Proxy Hunting System with AI Scoring</p>
                 </div>
-                <div class="flex items-center gap-4">
-                    <!-- System Online Indicator -->
-                    <div class="flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-lg border border-cyan-500">
-                        <div class="pulse-indicator w-3 h-3 bg-cyan-400 rounded-full"></div>
-                        <span class="text-cyan-400 font-semibold">SYSTEM ONLINE</span>
+            </div>
+            
+            <!-- System Monitoring Bar -->
+            <div class="flex items-center gap-3 justify-end">
+                <!-- CPU Monitor -->
+                <div class="flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-lg border border-orange-500 min-w-[140px]">
+                    <div class="relative w-10 h-10">
+                        <svg class="transform -rotate-90 w-10 h-10">
+                            <circle cx="20" cy="20" r="16" stroke="#374151" stroke-width="3" fill="none"></circle>
+                            <circle id="cpu-gauge-mini" cx="20" cy="20" r="16" stroke="#fb923c" stroke-width="3" fill="none"
+                                stroke-dasharray="100.53" stroke-dashoffset="100.53" stroke-linecap="round"></circle>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-xs font-bold text-orange-400">🔥</span>
+                        </div>
                     </div>
-                    <!-- Lightning Hunt Indicator -->
-                    <div class="lightning-pulse text-yellow-400 text-4xl" title="Active Hunt">⚡</div>
+                    <div class="flex flex-col">
+                        <span class="text-xs text-gray-400">CPU</span>
+                        <span id="cpu-percent" class="text-sm font-semibold text-orange-400">0%</span>
+                    </div>
+                </div>
+                
+                <!-- RAM Monitor -->
+                <div class="flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-lg border border-blue-500 min-w-[140px]">
+                    <div class="relative w-10 h-10">
+                        <svg class="transform -rotate-90 w-10 h-10">
+                            <circle cx="20" cy="20" r="16" stroke="#374151" stroke-width="3" fill="none"></circle>
+                            <circle id="ram-gauge-mini" cx="20" cy="20" r="16" stroke="#60a5fa" stroke-width="3" fill="none"
+                                stroke-dasharray="100.53" stroke-dashoffset="100.53" stroke-linecap="round"></circle>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-xs font-bold text-blue-400">💾</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xs text-gray-400">RAM</span>
+                        <span id="ram-percent" class="text-sm font-semibold text-blue-400">0%</span>
+                    </div>
+                </div>
+                
+                <!-- Temperature Monitor -->
+                <div class="flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-lg border border-red-500 min-w-[140px]">
+                    <div class="relative w-10 h-10">
+                        <svg class="transform -rotate-90 w-10 h-10">
+                            <circle cx="20" cy="20" r="16" stroke="#374151" stroke-width="3" fill="none"></circle>
+                            <circle id="temp-gauge-mini" cx="20" cy="20" r="16" stroke="#f87171" stroke-width="3" fill="none"
+                                stroke-dasharray="100.53" stroke-dashoffset="100.53" stroke-linecap="round"></circle>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-xs font-bold text-red-400">🌡️</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xs text-gray-400">TEMP</span>
+                        <span id="temp-value" class="text-sm font-semibold text-red-400">--°C</span>
+                    </div>
                 </div>
             </div>
         </header>
@@ -85,9 +196,128 @@
             </button>
         </div>
 
+        <!-- Search and Filter Bar -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-xl font-bold mb-4 text-cyan-400">🔍 Search & Filter Proxies</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <!-- Country Search -->
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Search by Country</label>
+                    <input 
+                        type="text" 
+                        id="search-country" 
+                        placeholder="e.g., US, Russia, France" 
+                        class="w-full bg-gray-700 text-white px-4 py-2 rounded border border-gray-600 focus:border-cyan-500 focus:outline-none"
+                        oninput="filterProxies()"
+                    >
+                </div>
+                
+                <!-- Protocol Filter -->
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Protocol</label>
+                    <select 
+                        id="filter-protocol" 
+                        class="w-full bg-gray-700 text-white px-4 py-2 rounded border border-gray-600 focus:border-cyan-500 focus:outline-none"
+                        onchange="filterProxies()"
+                    >
+                        <option value="all">All Protocols</option>
+                        <option value="http">HTTP</option>
+                        <option value="socks5">SOCKS5</option>
+                        <option value="socks4">SOCKS4</option>
+                        <option value="https">HTTPS</option>
+                    </select>
+                </div>
+
+                <!-- Anonymity Filter -->
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Anonymity Level</label>
+                    <select 
+                        id="filter-anonymity" 
+                        class="w-full bg-gray-700 text-white px-4 py-2 rounded border border-gray-600 focus:border-cyan-500 focus:outline-none"
+                        onchange="filterProxies()"
+                    >
+                        <option value="all">All Levels</option>
+                        <option value="elite">Elite Only</option>
+                        <option value="anonymous">Anonymous</option>
+                        <option value="transparent">Transparent</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Max Latency Filter -->
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Max Latency: <span id="latency-value">5000</span>ms</label>
+                    <input 
+                        type="range" 
+                        id="filter-latency" 
+                        min="100" 
+                        max="5000" 
+                        step="100"
+                        value="5000" 
+                        class="w-full"
+                        oninput="document.getElementById('latency-value').textContent = this.value; filterProxies()"
+                    >
+                </div>
+
+                <!-- Min Quality Filter -->
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Min Quality: <span id="quality-value">0.0</span></label>
+                    <input 
+                        type="range" 
+                        id="filter-quality" 
+                        min="0" 
+                        max="1" 
+                        step="0.1"
+                        value="0" 
+                        class="w-full"
+                        oninput="document.getElementById('quality-value').textContent = this.value; filterProxies()"
+                    >
+                </div>
+
+                <!-- Sort By -->
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Sort By</label>
+                    <select 
+                        id="sort-by" 
+                        class="w-full bg-gray-700 text-white px-4 py-2 rounded border border-gray-600 focus:border-cyan-500 focus:outline-none"
+                        onchange="filterProxies()"
+                    >
+                        <option value="quality">Quality (High to Low)</option>
+                        <option value="latency">Fastest (Low Latency)</option>
+                        <option value="country">Country (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Quick Filter Buttons -->
+            <div class="mt-4 flex gap-2 flex-wrap">
+                <button onclick="showPremiumProxies()" class="bg-gradient-to-r from-yellow-500 to-green-500 hover:from-yellow-600 hover:to-green-600 px-3 py-1 rounded text-sm font-bold">
+                    💎 Premium (Residential/Mobile)
+                </button>
+                <button onclick="quickFilter('elite')" class="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded text-sm">
+                    👑 Elite Only
+                </button>
+                <button onclick="quickFilter('fast')" class="bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm">
+                    ⚡ Fastest (&lt;1s)
+                </button>
+                <button onclick="quickFilter('quality')" class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm">
+                    ⭐ High Quality (&gt;0.7)
+                </button>
+                <button onclick="quickFilter('reset')" class="bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded text-sm">
+                    🔄 Reset Filters
+                </button>
+            </div>
+
+            <!-- Results Count -->
+            <div class="mt-4 text-sm text-gray-400">
+                Showing <span id="filtered-count" class="text-cyan-400 font-bold">0</span> of <span id="total-count" class="text-cyan-400 font-bold">0</span> proxies
+            </div>
+        </div>
+
         <!-- Proxy List -->
         <div class="bg-gray-800 p-6 rounded-lg">
-            <h2 class="text-2xl font-bold mb-4 text-cyan-400">Top Proxies</h2>
+            <h2 class="text-2xl font-bold mb-4 text-cyan-400">Proxy Results</h2>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
@@ -97,13 +327,13 @@
                             <th class="p-2">Location</th>
                             <th class="p-2">Latency</th>
                             <th class="p-2">Quality</th>
-                            <th class="p-2">Fraud</th>
+                            <th class="p-2">Type</th>
                             <th class="p-2">Flags</th>
                             <th class="p-2">Source</th>
                         </tr>
                     </thead>
                     <tbody id="proxy-table">
-                        <tr><td colspan="8" class="text-center p-4 text-gray-500">Loading...</td></tr>
+                        <tr><td colspan="9" class="text-center p-4 text-gray-500">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -152,34 +382,181 @@
             };
         }
 
+        let allProxies = [];
+
         async function refreshProxies() {
-            const response = await fetch('/api/proxies');
-            const proxies = await response.json();
-            
+            try {
+                console.log('Refreshing proxies...');
+                const response = await fetch('/api/proxies');
+                allProxies = await response.json();
+                console.log('Loaded all proxies:', allProxies.length);
+                document.getElementById('total-count').textContent = allProxies.length;
+                await filterProxies();
+            } catch (error) {
+                console.error('Error refreshing proxies:', error);
+            }
+        }
+
+        async function filterProxies() {
+            try {
+                const country = document.getElementById('search-country').value.trim();
+                const protocol = document.getElementById('filter-protocol').value;
+                const anonymity = document.getElementById('filter-anonymity').value;
+                const maxLatency = parseInt(document.getElementById('filter-latency').value);
+                const minQuality = parseFloat(document.getElementById('filter-quality').value);
+                const sortBy = document.getElementById('sort-by').value;
+
+                // Build query parameters for API
+                const params = new URLSearchParams();
+                if (country) params.append('country', country);
+                if (protocol !== 'all') params.append('protocol', protocol);
+                if (anonymity !== 'all') params.append('anonymity_level', anonymity);
+                params.append('max_latency', maxLatency);
+                params.append('min_quality', minQuality);
+
+                // Fetch filtered proxies from API
+                const url = `/api/proxies/filter?${params.toString()}`;
+                console.log('Fetching:', url);
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+                let proxies = await response.json();
+                console.log('Received proxies:', proxies.length);
+
+            // Sort proxies
+            if (sortBy === 'quality') {
+                proxies.sort((a, b) => b.quality_score - a.quality_score);
+            } else if (sortBy === 'latency') {
+                proxies.sort((a, b) => (a.latency_ms || 9999) - (b.latency_ms || 9999));
+            } else if (sortBy === 'country') {
+                proxies.sort((a, b) => (a.country || '').localeCompare(b.country || ''));
+            }
+
+            // Update filtered count
+            document.getElementById('filtered-count').textContent = proxies.length;
+
+            // Update table
             const table = document.getElementById('proxy-table');
             table.innerHTML = '';
+
+            if (proxies.length === 0) {
+                table.innerHTML = '<tr><td colspan="9" class="text-center p-4 text-gray-500">No proxies match your filters</td></tr>';
+                return;
+            }
 
             proxies.forEach(p => {
                 const flags = [];
                 if (p.elite) flags.push('👑 Elite');
                 if (p.dns_leak) flags.push('⚠️ Leak');
                 
+                // Proxy type with special colors for premium types
+                let typeDisplay = 'Datacenter';
+                let typeClass = 'text-gray-400';
+                if (p.proxy_type === 'mobile') {
+                    typeDisplay = '📱 Mobile';
+                    typeClass = 'text-yellow-400 font-bold';
+                    flags.unshift('💎 GOLDEN');
+                } else if (p.proxy_type === 'residential') {
+                    typeDisplay = '🏠 Residential';
+                    typeClass = 'text-green-400 font-bold';
+                    flags.unshift('💎 GOLDEN');
+                }
+                
                 const row = document.createElement('tr');
                 row.className = 'border-b border-gray-700 hover:bg-gray-750';
+                if (p.proxy_type === 'mobile' || p.proxy_type === 'residential') {
+                    row.className += ' bg-gradient-to-r from-yellow-900/20 to-green-900/20';
+                }
+                
                 row.innerHTML = `
                     <td class="p-2"><span class="bg-cyan-800 px-2 py-1 rounded text-xs">${p.protocol}</span></td>
                     <td class="p-2 font-mono text-cyan-400">${p.host}:${p.port}</td>
                     <td class="p-2">${p.country || '??'}, ${p.city || '??'}</td>
                     <td class="p-2"><span class="text-yellow-400">${p.latency_ms || 0}ms</span></td>
                     <td class="p-2"><span class="text-purple-400">${p.quality_score.toFixed(2)}</span></td>
-                    <td class="p-2"><span class="${p.fraud_score > 0.5 ? 'text-red-400' : 'text-green-400'}">${p.fraud_score.toFixed(2)}</span></td>
+                    <td class="p-2"><span class="${typeClass}">${typeDisplay}</span></td>
                     <td class="p-2 text-xs">${flags.join(' ')}</td>
                     <td class="p-2 text-xs text-gray-400">${p.source}</td>
                 `;
                 table.appendChild(row);
             });
+            } catch (error) {
+                console.error('Filter error:', error);
+                const table = document.getElementById('proxy-table');
+                table.innerHTML = '<tr><td colspan="9" class="text-center p-4 text-red-500">Error loading proxies. Check console.</td></tr>';
+            }
         }
 
+        function quickFilter(type) {
+            if (type === 'elite') {
+                document.getElementById('filter-anonymity').value = 'elite';
+                document.getElementById('filter-quality').value = '0.6';
+                document.getElementById('quality-value').textContent = '0.6';
+            } else if (type === 'fast') {
+                document.getElementById('filter-latency').value = '1000';
+                document.getElementById('latency-value').textContent = '1000';
+                document.getElementById('sort-by').value = 'latency';
+            } else if (type === 'quality') {
+                document.getElementById('filter-quality').value = '0.7';
+                document.getElementById('quality-value').textContent = '0.7';
+                document.getElementById('sort-by').value = 'quality';
+            } else if (type === 'reset') {
+                document.getElementById('search-country').value = '';
+                document.getElementById('filter-protocol').value = 'all';
+                document.getElementById('filter-anonymity').value = 'all';
+                document.getElementById('filter-latency').value = '5000';
+                document.getElementById('latency-value').textContent = '5000';
+                document.getElementById('filter-quality').value = '0';
+                document.getElementById('quality-value').textContent = '0.0';
+                document.getElementById('sort-by').value = 'quality';
+            }
+            filterProxies();
+        }
+
+        async function showPremiumProxies() {
+            try {
+                const response = await fetch('/api/proxies/premium');
+                let proxies = await response.json();
+                
+                document.getElementById('filtered-count').textContent = proxies.length;
+                document.getElementById('total-count').textContent = allProxies.length;
+                
+                const table = document.getElementById('proxy-table');
+                table.innerHTML = '';
+                
+                if (proxies.length === 0) {
+                    table.innerHTML = '<tr><td colspan="9" class="text-center p-4 text-yellow-500">⚠️ No premium proxies found yet. Keep hunting!</td></tr>';
+                    return;
+                }
+                
+                proxies.forEach(p => {
+                    const flags = [];
+                    if (p.elite) flags.push('👑 Elite');
+                    if (p.dns_leak) flags.push('⚠️ Leak');
+                    flags.unshift('💎 GOLDEN');
+                    
+                    let typeDisplay = p.proxy_type === 'mobile' ? '📱 Mobile' : '🏠 Residential';
+                    let typeClass = p.proxy_type === 'mobile' ? 'text-yellow-400 font-bold' : 'text-green-400 font-bold';
+                    
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-gray-700 hover:bg-gray-750 bg-gradient-to-r from-yellow-900/30 to-green-900/30';
+                    row.innerHTML = `
+                        <td class="p-2"><span class="bg-cyan-800 px-2 py-1 rounded text-xs">${p.protocol}</span></td>
+                        <td class="p-2 font-mono text-cyan-400">${p.host}:${p.port}</td>
+                        <td class="p-2">${p.country || '??'}, ${p.city || '??'}</td>
+                        <td class="p-2"><span class="text-yellow-400">${p.latency_ms || 0}ms</span></td>
+                        <td class="p-2"><span class="text-purple-400">${p.quality_score.toFixed(2)}</span></td>
+                        <td class="p-2"><span class="${typeClass}">${typeDisplay}</span><br><span class="text-xs text-gray-400">${p.isp || 'Unknown ISP'}</span></td>
+                        <td class="p-2 text-xs">${flags.join(' ')}</td>
+                        <td class="p-2 text-xs text-gray-400">${p.source}</td>
+                    `;
+                    table.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Premium filter error:', error);
+            }
+        }
         async function triggerHunt() {
             await fetch('/api/hunt', { method: 'POST' });
             alert('Hunt triggered! Check back in a few minutes.');
@@ -216,10 +593,62 @@
             document.getElementById('sources-modal').classList.add('hidden');
         }
 
+        // Reset filters to defaults on page load
+        function resetFiltersToDefaults() {
+            document.getElementById('search-country').value = '';
+            document.getElementById('filter-protocol').value = 'all';
+            document.getElementById('filter-anonymity').value = 'all';
+            document.getElementById('filter-latency').value = '5000';
+            document.getElementById('latency-value').textContent = '5000';
+            document.getElementById('filter-quality').value = '0';
+            document.getElementById('quality-value').textContent = '0.0';
+            document.getElementById('sort-by').value = 'quality';
+        }
+
+        // Update gauge visualization
+        function updateGauge(elementId, percent, radius = 16) {
+            const circle = document.getElementById(elementId);
+            if (!circle) return;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (percent / 100 * circumference);
+            circle.style.strokeDashoffset = offset;
+        }
+
+        // Fetch and update system metrics
+        async function updateSystemMetrics() {
+            try {
+                const response = await fetch('/api/system/stats');
+                const data = await response.json();
+                
+                // Update CPU
+                document.getElementById('cpu-percent').textContent = data.cpu_usage.toFixed(1) + '%';
+                updateGauge('cpu-gauge-mini', data.cpu_usage, 16);
+                
+                // Update RAM
+                document.getElementById('ram-percent').textContent = data.ram_percent.toFixed(1) + '%';
+                updateGauge('ram-gauge-mini', data.ram_percent, 16);
+                
+                // Update Temperature
+                if (data.temperature !== null) {
+                    document.getElementById('temp-value').textContent = data.temperature.toFixed(1) + '°C';
+                    // Scale temperature: 0°C = 0%, 100°C = 100%
+                    const tempPercent = Math.min(data.temperature, 100);
+                    updateGauge('temp-gauge-mini', tempPercent, 16);
+                } else {
+                    document.getElementById('temp-value').textContent = 'N/A';
+                }
+            } catch (error) {
+                console.error('System metrics error:', error);
+            }
+        }
+
         // Initial load
+        resetFiltersToDefaults();
         connectWebSocket();
         refreshProxies();
+        updateSystemMetrics();
         setInterval(refreshProxies, 30000); // Refresh every 30s
+        setInterval(updateSystemMetrics, 2000); // Update system metrics every 2s
     </script>
 </body>
 </html>
