@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Proxies - Omega9 NEXUS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .filter-group label {
+            font-size: 0.85em;
+            color: #666;
+            font-weight: 600;
+        }
+        select, input[type="range"] {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95em;
+            transition: border-color 0.3s;
+        }
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .proxy-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .proxy-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .proxy-table td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .proxy-table tr:hover {
+            background: #f8f9ff;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-mobile {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .badge-residential {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .badge-datacenter {
+            background: #e0e0e0;
+            color: #666;
+        }
+        .quality-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .quality-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        .quality-excellent { background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%); }
+        .quality-good { background: linear-gradient(90deg, #f2994a 0%, #f2c94c 100%); }
+        .quality-poor { background: linear-gradient(90deg, #eb3349 0%, #f45c43 100%); }
+        .no-proxies {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            font-size: 1.2em;
+        }
+        .refresh-notice {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f7ff;
+            border-radius: 8px;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .loading {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Premium Proxies Dashboard</h1>
+        <p class="subtitle">Mobile & Residential Proxies - Elite Quality Only</p>
+        
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="total-count">0</div>
+                <div class="stat-label">Total Premium</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="mobile-count">0</div>
+                <div class="stat-label">📱 Mobile</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="residential-count">0</div>
+                <div class="stat-label">🏠 Residential</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avg-quality">0%</div>
+                <div class="stat-label">Avg Quality</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label>Type</label>
+                <select id="filter-type">
+                    <option value="all">All Premium</option>
+                    <option value="mobile">Mobile Only</option>
+                    <option value="residential">Residential Only</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Country</label>
+                <select id="filter-country">
+                    <option value="all">All Countries</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Min Quality: <span id="quality-value">70%</span></label>
+                <input type="range" id="filter-quality" min="0" max="100" value="70" step="5">
+            </div>
+        </div>
+
+        <table class="proxy-table">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Address</th>
+                    <th>Location</th>
+                    <th>Provider</th>
+                    <th>Quality</th>
+                    <th>Latency</th>
+                    <th>Last Verified</th>
+                </tr>
+            </thead>
+            <tbody id="proxy-list">
+                <tr><td colspan="7" class="no-proxies loading">Loading premium proxies...</td></tr>
+            </tbody>
+        </table>
+
+        <div class="refresh-notice">
+            ⚡ Auto-refreshing every 30 seconds
+        </div>
+    </div>
+
+    <script>
+        let allProxies = [];
+
+        async function fetchProxies() {
+            try {
+                const response = await fetch('/api/export?type=premium&format=json');
+                const data = await response.json();
+                allProxies = data;
+                updateStats();
+                updateCountryFilter();
+                renderProxies();
+            } catch (error) {
+                console.error('Failed to fetch proxies:', error);
+            }
+        }
+
+        function updateStats() {
+            const mobile = allProxies.filter(p => p.is_mobile).length;
+            const residential = allProxies.filter(p => p.is_residential).length;
+            const avgQuality = allProxies.length > 0
+                ? (allProxies.reduce((sum, p) => sum + (p.quality_score || 0), 0) / allProxies.length * 100).toFixed(0)
+                : 0;
+
+            document.getElementById('total-count').textContent = allProxies.length;
+            document.getElementById('mobile-count').textContent = mobile;
+            document.getElementById('residential-count').textContent = residential;
+            document.getElementById('avg-quality').textContent = avgQuality + '%';
+        }
+
+        function updateCountryFilter() {
+            const countries = [...new Set(allProxies.map(p => p.country))].sort();
+            const select = document.getElementById('filter-country');
+            select.innerHTML = '<option value="all">All Countries</option>';
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                select.appendChild(option);
+            });
+        }
+
+        function renderProxies() {
+            const type = document.getElementById('filter-type').value;
+            const country = document.getElementById('filter-country').value;
+            const minQuality = parseInt(document.getElementById('filter-quality').value) / 100;
+
+            let filtered = allProxies.filter(p => {
+                if (type === 'mobile' && !p.is_mobile) return false;
+                if (type === 'residential' && !p.is_residential) return false;
+                if (country !== 'all' && p.country !== country) return false;
+                if ((p.quality_score || 0) < minQuality) return false;
+                return true;
+            });
+
+            const tbody = document.getElementById('proxy-list');
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="no-proxies">No proxies match your filters</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(p => {
+                const typeLabel = p.is_mobile ? 'mobile' : 'residential';
+                const typeBadge = p.is_mobile ? 'badge-mobile' : 'badge-residential';
+                const quality = ((p.quality_score || 0) * 100).toFixed(0);
+                const qualityClass = quality >= 80 ? 'quality-excellent' : quality >= 50 ? 'quality-good' : 'quality-poor';
+                const provider = p.isp_name || p.isp || 'Unknown';
+                const lastVerified = p.last_checked ? new Date(p.last_checked * 1000).toLocaleString() : 'Never';
+
+                return `
+                    <tr>
+                        <td><span class="badge ${typeBadge}">${p.is_mobile ? '📱 MOBILE' : '🏠 RESIDENTIAL'}</span></td>
+                        <td><strong>${p.protocol}://${p.host}:${p.port}</strong></td>
+                        <td>${p.city || 'Unknown'}, ${p.country || 'Unknown'}</td>
+                        <td>${provider}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="min-width: 40px;">${quality}%</span>
+                                <div class="quality-bar" style="flex: 1;">
+                                    <div class="quality-fill ${qualityClass}" style="width: ${quality}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${p.latency_ms}ms</td>
+                        <td>${lastVerified}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Event listeners
+        document.getElementById('filter-type').addEventListener('change', renderProxies);
+        document.getElementById('filter-country').addEventListener('change', renderProxies);
+        document.getElementById('filter-quality').addEventListener('input', (e) => {
+            document.getElementById('quality-value').textContent = e.target.value + '%';
+            renderProxies();
+        });
+
+        // Initial load and auto-refresh
+        fetchProxies();
+        setInterval(fetchProxies, 30000); // Refresh every 30 seconds
+    </script>
+</body>
+</html>
